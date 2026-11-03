@@ -248,8 +248,8 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawBreadboard(proj
     project.components.forEach { c ->
         val p = boardPoint(c.x, c.y, w, h, "breadboard")
         val tint = if (c.id == selected) Mint else Color(0xFFE7EEF2)
-        drawLine(Color(0xFFCBD7D9), Offset(p.x - 15, p.y + 4), Offset(p.x - 15, p.y + 19), 3f)
-        drawLine(Color(0xFFCBD7D9), Offset(p.x + 15, p.y + 4), Offset(p.x + 15, p.y + 19), 3f)
+        drawLine(Color(0xFFCBD7D9), Offset(p.x - 15f, p.y + 4f), Offset(p.x - 15f, p.y + 19f), 3f)
+        drawLine(Color(0xFFCBD7D9), Offset(p.x + 15f, p.y + 4f), Offset(p.x + 15f, p.y + 19f), 3f)
         drawRoundRect(Color(0xFF07131B), Offset(p.x - 23, p.y - 13), Size(46f, 25f), androidx.compose.ui.geometry.CornerRadius(6f))
         drawRoundRect(if (c.type == ComponentType.LED) Color(0xFFE14C39) else if (c.type == ComponentType.RESISTOR) Color(0xFFC99B5A) else Color(0xFF315C78),
             Offset(p.x - 20, p.y - 16), Size(40f, 23f), androidx.compose.ui.geometry.CornerRadius(6f))
@@ -287,7 +287,7 @@ private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawSchematic(proje
                 drawLine(color, Offset(p.x + 28, p.y), Offset(p.x + 40, p.y), 3f)
             }
         }
-        drawContext.canvas.nativeCanvas.drawText(c.label, p.x - 30f, p.y + 38f, android.graphics.Paint().apply { color = android.graphics.Color.WHITE; textSize = 23f })
+        drawContext.canvas.nativeCanvas.drawText(c.label, p.x - 30f, p.y + 38f, android.graphics.Paint().apply { this.color = android.graphics.Color.WHITE; textSize = 23f })
     }
 }
 
