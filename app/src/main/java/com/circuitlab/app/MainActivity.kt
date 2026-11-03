@@ -44,7 +44,7 @@ class MainActivity:ComponentActivity(){ override fun onCreate(savedInstanceState
     Canvas(Modifier.fillMaxSize()){
      val step=24f;for(x in 0..(size.width/step).toInt())for(y in 0..(size.height/step).toInt())drawCircle(Color(0xFF31424D),1.2f,Offset(x*step,y*step))
      if(mode=="3D Breadboard"){drawRoundRect(Color(0xFF244B43),Offset(18f,18f),androidx.compose.ui.geometry.Size(size.width-36f,size.height-36f),cornerRadius=androidx.compose.ui.geometry.CornerRadius(18f));for(r in 0..9)for(c in 0..24)drawCircle(Color(0xFF9BB5A9),2f,Offset(36f+c*18f,50f+r*18f))}
-     project.components.forEach{c->val p=Offset(c.x,c.y);val color=if(selected==c.id)Mint else Color.White;drawCircle(color,p,17f,style=Stroke(2.5f));drawLine(color,Offset(p.x-10,p.y),Offset(p.x+10,p.y),3f)}
+     project.components.forEach{c->val p=Offset(c.x,c.y);val color=if(selected==c.id)Mint else Color.White;drawCircle(color,17f,p,style=Stroke(2.5f));drawLine(color,Offset(p.x-10,p.y),Offset(p.x+10,p.y),3f)}
     }
     Text("${project.components.size} عنصر",Modifier.align(Alignment.TopEnd).padding(9.dp),color=Muted,fontSize=11.sp)
    }
