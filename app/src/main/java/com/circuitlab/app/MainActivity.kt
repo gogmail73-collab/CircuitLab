@@ -27,6 +27,11 @@ import androidx.compose.ui.unit.sp
 import com.circuitlab.app.engine.DcSolver
 import com.circuitlab.app.model.*
 import kotlin.math.*
+import io.github.sceneview.SceneView
+import io.github.sceneview.CubeNode
+import io.github.sceneview.SphereNode
+import io.github.sceneview.math.Position
+import io.github.sceneview.math.Size as SceneSize
 
 private val Bg = Color(0xFF0B141C)
 private val Panel = Color(0xFF172632)
@@ -184,21 +189,24 @@ private fun CircuitWorkspace(
 ) {
     var canvasSize by remember { mutableStateOf(Size.Zero) }
     Box(modifier.background(Color(0xFF101D27), RoundedCornerShape(18.dp)).padding(5.dp)) {
-        Canvas(Modifier.fillMaxSize().pointerInput(mode, wireMode, project.components) {
-            detectTapGestures { tap ->
-                val hit = project.components.lastOrNull { c ->
-                    val p = boardPoint(c.x, c.y, size.width, size.height, mode)
-                    (tap - p).getDistance() < 34f
+        if (mode == "breadboard") {
+            RealBreadboard3D(project = project, selected = selected, modifier = Modifier.fillMaxSize())
+        } else {
+            Canvas(Modifier.fillMaxSize().pointerInput(mode, wireMode, project.components) {
+                detectTapGestures { tap ->
+                    val hit = project.components.lastOrNull { c ->
+                        val p = boardPoint(c.x, c.y, size.width, size.height, mode)
+                        (tap - p).getDistance() < 34f
+                    }
+                    if (hit != null && !wireMode) onComponentTap(hit) else {
+                        val logical = Offset((tap.x / size.width).coerceIn(0f, 1f), (tap.y / size.height).coerceIn(0f, 1f))
+                        onBoardTap(logical)
+                    }
                 }
-                if (hit != null && !wireMode) onComponentTap(hit) else {
-                    val logical = Offset((tap.x / size.width).coerceIn(0f, 1f), (tap.y / size.height).coerceIn(0f, 1f))
-                    onBoardTap(logical)
-                }
+            }) {
+                canvasSize = size
+                drawSchematic(project, selected, size)
             }
-        }) {
-            canvasSize = size
-            if (mode == "breadboard") drawBreadboard(project, selected, size)
-            else drawSchematic(project, selected, size)
         }
         Text(if (wireMode) "وضع توصيل الأسلاك: اضغط نقطتين" else if (mode == "breadboard") "اضغط اللوحة لوضع العنصر • اضغط العنصر لتعديل قيمته" else "اضغط مساحة المخطط لإضافة المكون",
             color = Color(0xFFB6C8D0), fontSize = 9.sp, modifier = Modifier.align(Alignment.BottomCenter).padding(8.dp))
