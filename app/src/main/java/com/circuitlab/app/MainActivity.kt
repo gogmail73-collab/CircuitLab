@@ -187,7 +187,7 @@ private fun CircuitWorkspace(
         Canvas(Modifier.fillMaxSize().pointerInput(mode, wireMode, project.components) {
             detectTapGestures { tap ->
                 val hit = project.components.lastOrNull { c ->
-                    val p = boardPoint(c.x, c.y, size.width, size.height, mode)
+                    val p = boardPoint(c.x, c.y, size.width.toFloat(), size.height.toFloat(), mode)
                     (tap - p).getDistance() < 34f
                 }
                 if (hit != null && !wireMode) onComponentTap(hit) else {
