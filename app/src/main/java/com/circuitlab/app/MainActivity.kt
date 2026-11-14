@@ -1,6 +1,7 @@
 package com.circuitlab.app
 
 import android.os.Bundle
+import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Canvas
@@ -24,6 +25,9 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalContext
+import org.json.JSONArray
+import org.json.JSONObject
 import com.circuitlab.app.engine.DcSolver
 import com.circuitlab.app.model.*
 import kotlin.math.*
@@ -42,8 +46,10 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CircuitLabApp() {
+    val context = LocalContext.current.applicationContext
     var mode by remember { mutableStateOf("breadboard") }
-    var project by remember { mutableStateOf(CircuitProject()) }
+    var project by remember { mutableStateOf(loadCircuitProject(context)) }
+    LaunchedEffect(project) { saveCircuitProject(context, project) }
     var chosen by remember { mutableStateOf<ComponentType?>(null) }
     var wireMode by remember { mutableStateOf(false) }
     var wireStart by remember { mutableStateOf<Offset?>(null) }
@@ -58,11 +64,11 @@ fun CircuitLabApp() {
                     Text("CircuitLab", color = Mint, fontSize = 25.sp, fontWeight = FontWeight.Black)
                     Text("مختبر الدوائر الإلكترونية", color = TextSoft, fontSize = 12.sp)
                 }
-                Text("BETA • OFFLINE", color = TextSoft, fontSize = 10.sp)
+                Text("BETA • حفظ تلقائي", color = TextSoft, fontSize = 10.sp)
             }
             Spacer(Modifier.height(14.dp))
             Row(Modifier.fillMaxWidth().background(Panel, RoundedCornerShape(14.dp)).padding(4.dp)) {
-                listOf("breadboard" to "لوحة التجارب 3D", "schematic" to "المخطط").forEach { (key, label) ->
+                listOf("breadboard" to "لوحة التجارب", "schematic" to "المخطط").forEach { (key, label) ->
                     Box(Modifier.weight(1f).background(if (mode == key) Mint.copy(alpha = .18f) else Color.Transparent, RoundedCornerShape(11.dp))
                         .clickable { mode = key; wireMode = false; wireStart = null }.padding(12.dp), contentAlignment = Alignment.Center) {
                         Text(label, color = if (mode == key) Mint else TextSoft, fontWeight = FontWeight.SemiBold)
@@ -305,4 +311,72 @@ private fun ComponentType.defaultValue(): Pair<Double, String> = when (this) {
     ComponentType.BATTERY -> 9.0 to "V"; ComponentType.RESISTOR -> 1000.0 to "Ω"
     ComponentType.CAPACITOR -> 100.0 to "µF"; ComponentType.INDUCTOR -> 10.0 to "mH"
     else -> 0.0 to ""
+}
+
+
+/** Save the user's current circuit locally across app restarts. */
+private fun loadCircuitProject(context: Context): CircuitProject {
+    val raw = context.getSharedPreferences("circuitlab_local", Context.MODE_PRIVATE)
+        .getString("saved_project", null) ?: return CircuitProject()
+    return try {
+        val root = JSONObject(raw)
+        val componentArray = root.optJSONArray("components") ?: JSONArray()
+        val components = buildList {
+            for (i in 0 until componentArray.length()) {
+                val item = componentArray.optJSONObject(i) ?: continue
+                val type = runCatching { ComponentType.valueOf(item.getString("type")) }.getOrNull() ?: continue
+                add(CircuitComponent(
+                    id = item.optString("id", java.util.UUID.randomUUID().toString()),
+                    type = type,
+                    label = item.optString("label", type.name),
+                    value = item.optDouble("value", 0.0),
+                    unit = item.optString("unit", ""),
+                    x = item.optDouble("x", 0.5).toFloat(),
+                    y = item.optDouble("y", 0.5).toFloat(),
+                    rotation = item.optInt("rotation", 0),
+                    enabled = item.optBoolean("enabled", true)
+                ))
+            }
+        }
+        val wireArray = root.optJSONArray("wires") ?: JSONArray()
+        val wires = buildList {
+            for (i in 0 until wireArray.length()) {
+                val item = wireArray.optJSONObject(i) ?: continue
+                add(Wire(item.optString("from"), item.optString("to")))
+            }
+        }
+        CircuitProject(
+            name = root.optString("name", "دائرة جديدة"),
+            components = components,
+            wires = wires
+        )
+    } catch (_: Exception) {
+        CircuitProject()
+    }
+}
+
+private fun saveCircuitProject(context: Context, project: CircuitProject) {
+    val root = JSONObject().put("name", project.name)
+    val components = JSONArray()
+    project.components.forEach { component ->
+        components.put(JSONObject()
+            .put("id", component.id)
+            .put("type", component.type.name)
+            .put("label", component.label)
+            .put("value", component.value)
+            .put("unit", component.unit)
+            .put("x", component.x.toDouble())
+            .put("y", component.y.toDouble())
+            .put("rotation", component.rotation)
+            .put("enabled", component.enabled))
+    }
+    val wires = JSONArray()
+    project.wires.forEach { wire ->
+        wires.put(JSONObject().put("from", wire.from).put("to", wire.to))
+    }
+    root.put("components", components).put("wires", wires)
+    context.getSharedPreferences("circuitlab_local", Context.MODE_PRIVATE)
+        .edit()
+        .putString("saved_project", root.toString())
+        .apply()
 }
