@@ -21,7 +21,7 @@ class DcSolverTest {
         assertEquals(0.003, result.branchCurrents["R1"]!!, 1e-12)
         assertEquals(3.0, result.voltageDrops["R1"]!!, 1e-9)
         assertEquals(6.0, result.voltageDrops["R2"]!!, 1e-9)
-        assertEquals(0.027, result.powers["R1"]!!, 1e-9)
+        assertEquals(0.009, result.powers["R1"]!!, 1e-9)
     }
 
     @Test fun openSwitchProducesZeroCurrent() {
