@@ -96,7 +96,7 @@ fun CircuitLabApp() {
             }
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(if (mode == "breadboard") "لوحة التجارب الحقيقية • نقاط توصيل" else "مخطط الدائرة • التوصيلات", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text(if (mode == "breadboard") "لوحة تجارب تعليمية ثنائية الأبعاد • نقاط توصيل" else "مخطط الدائرة • التوصيلات", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                 Text("${project.components.size} عنصر", color = Mint, fontSize = 11.sp)
             }
             Spacer(Modifier.height(7.dp))
