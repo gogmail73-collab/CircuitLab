@@ -96,7 +96,7 @@ fun CircuitLabApp() {
             }
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(if (mode == "breadboard") "لوحة التجارب الحقيقية • نقاط توصيل" else "مخطط الدائرة • التوصيلات", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                Text(if (mode == "breadboard") "لوحة تجارب تعليمية ثنائية الأبعاد • نقاط توصيل" else "مخطط الدائرة • التوصيلات", color = Color.White, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
                 Text("${project.components.size} عنصر", color = Mint, fontSize = 11.sp)
             }
             Spacer(Modifier.height(7.dp))
@@ -113,11 +113,13 @@ fun CircuitLabApp() {
                             wireStart = point
                             status = "اختار نقطة النهاية للسلك."
                         } else {
-                            val a = "${first.x.roundToInt()},${first.y.roundToInt()}"
-                            val b = "${point.x.roundToInt()},${point.y.roundToInt()}"
+                            // Store normalized floating-point coordinates. Rounding these values
+                            // to integers collapses almost every tap to 0 or 1 and corrupts wire placement.
+                            val a = "${first.x},${first.y}"
+                            val b = "${point.x},${point.y}"
                             if (a != b) project = project.copy(wires = project.wires + Wire(a, b))
                             wireStart = null
-                            status = "تمت إضافة التوصيلة."
+                            status = "تم رسم السلك بصرياً. تنبيه: الأسلاك لا تدخل بعد في حسابات المحاكاة.";
                         }
                     } else {
                         val type = chosen
@@ -144,7 +146,7 @@ fun CircuitLabApp() {
                 Button(onClick = {
                     val r = DcSolver.solve(project)
                     status = if (r.success) "نتيجة تعليمية: ${r.message}" else r.message
-                }, modifier = Modifier.weight(1f)) { Text("▶ محاكاة DC") }
+                }, modifier = Modifier.weight(1f)) { Text("حساب حلقة توالي") }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 TextButton(onClick = {
